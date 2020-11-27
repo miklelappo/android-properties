@@ -1,0 +1,18 @@
+[package]
+name = "android-properties"
+version = "0.1.0"
+authors = ["Mikhail Lappo <mikhail.lappo@esrlabs.com>"]
+edition = "2018"
+license = "MIT"
+repository = "https://github.com/miklelappo/android-properties"
+homepage = "https://github.com/miklelappo/android-properties"
+keywords = [
+    "android",
+    "properties",
+    "cutils",
+    "bionic",
+    "persistent"
+]
+
+[dependencies]
+anyhow = "1.0.34"
