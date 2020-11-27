@@ -13,8 +13,12 @@ before_script:
 
 script:
   - cargo check --target=arm-linux-androideabi
+  - cargo check --target=arm-linux-androideabi --examples
   - cargo check --target=armv7-linux-androideabi
+  - cargo check --target=armv7-linux-androideabi --examples
   - cargo check --target=aarch64-linux-android
+  - cargo check --target=aarch64-linux-android --examples
   - cargo check --target=i686-linux-android
+  - cargo check --target=i686-linux-android --examples
   - cargo doc
   - cargo test
