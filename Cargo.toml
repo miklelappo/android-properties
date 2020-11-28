@@ -14,5 +14,9 @@ keywords = [
     "persistent"
 ]
 
+[features]
+# Use this feature if you have Android 8 and older versions
+bionic-deprecated = []
+
 [dependencies]
 anyhow = "1.0.34"

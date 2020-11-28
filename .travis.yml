@@ -20,5 +20,13 @@ script:
   - cargo check --target=aarch64-linux-android --examples
   - cargo check --target=i686-linux-android
   - cargo check --target=i686-linux-android --examples
+  - cargo check --target=arm-linux-androideabi --features "bionic-deprecated"
+  - cargo check --target=arm-linux-androideabi --examples --features "bionic-deprecated"
+  - cargo check --target=armv7-linux-androideabi --features "bionic-deprecated"
+  - cargo check --target=armv7-linux-androideabi --examples --features "bionic-deprecated"
+  - cargo check --target=aarch64-linux-android --features "bionic-deprecated"
+  - cargo check --target=aarch64-linux-android --examples --features "bionic-deprecated"
+  - cargo check --target=i686-linux-android --features "bionic-deprecated"
+  - cargo check --target=i686-linux-android --examples --features "bionic-deprecated"
   - cargo doc
   - cargo test

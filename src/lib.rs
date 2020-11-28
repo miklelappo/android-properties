@@ -1,15 +1,44 @@
 use anyhow::{anyhow, Result};
 
 #[cfg(target_os = "android")]
-use std::{ffi::CString, os::raw::c_char};
+use std::{
+    ffi::{CStr, CString},
+    os::raw::{c_char, c_int},
+    ptr,
+};
+
+const PROPERTY_VALUE_MAX: usize = 92;
+
+#[repr(C)]
+pub struct prop_info {
+    pub kLongFlag: u32,
+    pub kLongLegacyErrorBufferSize: i32,
+}
+
+#[cfg(target_os = "android")]
+type Callback = fn(*mut String, *const c_char, *const c_char, u32);
+
+#[cfg(target_os = "android")]
+pub fn property_callback(cookie: *mut String, name: *const c_char, value: *const c_char, _serial: u32) {
+    let cname = unsafe { CStr::from_ptr(name) };
+    let cvalue = unsafe { CStr::from_ptr(value) };
+    unsafe { *cookie = cvalue.to_str().unwrap().to_string() };
+}
 
 #[cfg(target_os = "android")]
 extern "C" {
-    fn __system_property_set(name: *const c_char, value: *const c_char) -> i32;
-    fn __system_property_get(name: *const c_char, value: *mut c_char) -> i32;
+    fn __system_property_set(name: *const c_char, value: *const c_char) -> c_int;
+    fn __system_property_find(name: *const c_char) -> *const prop_info;
+    fn __system_property_read_callback(pi: *const prop_info, callback: Callback, cookie: *mut String);
+//fn __system_property_foreach(void (*__callback)(const prop_info* __pi, void* __cookie), void* __cookie) -> c_int;
 }
 
-const PROPERTY_VALUE_MAX: usize = 92;
+#[cfg(target_os = "android")]
+#[cfg(feature = "bionic-deprecated")]
+extern "C" {
+    /* Deprecated. Use __system_property_read_callback instead. */
+    fn __system_property_get(name: *const c_char, value: *mut c_char) -> c_int;
+}
 
 /// Set a property with `name` to value `value`
 #[cfg(target_os = "android")]
@@ -24,8 +53,23 @@ pub fn setprop(name: &str, value: &str) -> Result<()> {
     }
 }
 
+#[cfg(target_os = "android")]
+#[cfg(not(feature = "bionic-deprecated"))]
+pub fn getprop(name: &str) -> Option<String> {
+    let cname = CString::new(name).unwrap();
+    let pi = unsafe { __system_property_find(cname.as_ptr()) };
+    if pi == ptr::null() {
+        return None;
+    }
+    let mut result = Box::new(String::new());
+    unsafe { __system_property_read_callback(pi, property_callback, &mut *result) };
+    println!("Result == {}", result);
+    Some(result.to_string())
+}
+
 /// Retrieve a property with name `name`. Returns None if the operation fails.
 #[cfg(target_os = "android")]
+#[cfg(feature = "bionic-deprecated")]
 pub fn getprop(name: &str) -> Option<String> {
     let cname = CString::new(name).unwrap();
     let cvalue = CString::new(Vec::with_capacity(PROPERTY_VALUE_MAX)).unwrap();
