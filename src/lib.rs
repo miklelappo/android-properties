@@ -9,28 +9,46 @@ use std::{
 
 const PROPERTY_VALUE_MAX: usize = 92;
 
+pub struct AndroidProperty {
+    pub name: String,
+    pub value: String,
+}
+
 #[repr(C)]
 pub struct prop_info {
-    pub kLongFlag: u32,
-    pub kLongLegacyErrorBufferSize: i32,
+    pub serial: u32,
+    pub value: [u8; PROPERTY_VALUE_MAX],
+    pub name: [u8; PROPERTY_VALUE_MAX],
 }
 
 #[cfg(target_os = "android")]
-type Callback = fn(*mut String, *const c_char, *const c_char, u32);
+type Callback = fn(*mut AndroidProperty, *const c_char, *const c_char, u32);
+#[cfg(target_os = "android")]
+type ForEachCallback = fn(*const prop_info, *mut Vec<AndroidProperty>);
 
 #[cfg(target_os = "android")]
-pub fn property_callback(cookie: *mut String, name: *const c_char, value: *const c_char, _serial: u32) {
+pub fn property_callback(cookie: *mut AndroidProperty, name: *const c_char, value: *const c_char, _serial: u32) {
     let cname = unsafe { CStr::from_ptr(name) };
     let cvalue = unsafe { CStr::from_ptr(value) };
-    unsafe { *cookie = cvalue.to_str().unwrap().to_string() };
+    unsafe { (*cookie).name = cname.to_str().unwrap().to_string() };
+    unsafe { (*cookie).value = cvalue.to_str().unwrap().to_string() };
+}
+
+#[cfg(target_os = "android")]
+pub fn foreach_property_callback(pi: *const prop_info, cookie: *mut Vec<AndroidProperty>) {
+    let mut result = Box::new(AndroidProperty {name: "".to_string(), value: "".to_string()});
+    unsafe { __system_property_read_callback(pi, property_callback, &mut *result) };
+    unsafe {
+        (*cookie).push(*result)
+    };
 }
 
 #[cfg(target_os = "android")]
 extern "C" {
     fn __system_property_set(name: *const c_char, value: *const c_char) -> c_int;
     fn __system_property_find(name: *const c_char) -> *const prop_info;
-    fn __system_property_read_callback(pi: *const prop_info, callback: Callback, cookie: *mut String);
-//fn __system_property_foreach(void (*__callback)(const prop_info* __pi, void* __cookie), void* __cookie) -> c_int;
+    fn __system_property_read_callback(pi: *const prop_info, callback: Callback, cookie: *mut AndroidProperty);
+    fn __system_property_foreach(callback: ForEachCallback, cookie: *mut Vec<AndroidProperty>) -> c_int;
 }
 
 #[cfg(target_os = "android")]
@@ -61,10 +79,9 @@ pub fn getprop(name: &str) -> Option<String> {
     if pi == ptr::null() {
         return None;
     }
-    let mut result = Box::new(String::new());
+    let mut result = Box::new(AndroidProperty {name: "".to_string(), value: "".to_string()});
     unsafe { __system_property_read_callback(pi, property_callback, &mut *result) };
-    println!("Result == {}", result);
-    Some(result.to_string())
+    Some(result.value)
 }
 
 /// Retrieve a property with name `name`. Returns None if the operation fails.
@@ -89,4 +106,13 @@ pub fn getprop(_name: &str) -> Option<String> {
 #[cfg(not(target_os = "android"))]
 pub fn setprop(_name: &str, _value: &str) -> Result<()> {
     Err(anyhow!("Failed to set android property (OS not supported)"))
+}
+
+#[cfg(target_os = "android")]
+pub fn prop_values() -> impl Iterator<Item = AndroidProperty> {
+    let mut properties: Box<Vec<AndroidProperty>> = Box::new(Vec::new());
+    unsafe {
+        __system_property_foreach(foreach_property_callback, &mut *properties);
+    }
+    properties.into_iter()
 }
