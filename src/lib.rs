@@ -22,25 +22,23 @@ pub struct prop_info {
 }
 
 #[cfg(target_os = "android")]
-type Callback = fn(*mut AndroidProperty, *const c_char, *const c_char, u32);
+type Callback = unsafe fn(*mut AndroidProperty, *const c_char, *const c_char, u32);
 #[cfg(target_os = "android")]
-type ForEachCallback = fn(*const prop_info, *mut Vec<AndroidProperty>);
+type ForEachCallback = unsafe fn(*const prop_info, *mut Vec<AndroidProperty>);
 
 #[cfg(target_os = "android")]
-pub fn property_callback(cookie: *mut AndroidProperty, name: *const c_char, value: *const c_char, _serial: u32) {
-    let cname = unsafe { CStr::from_ptr(name) };
-    let cvalue = unsafe { CStr::from_ptr(value) };
-    unsafe { (*cookie).name = cname.to_str().unwrap().to_string() };
-    unsafe { (*cookie).value = cvalue.to_str().unwrap().to_string() };
+unsafe fn property_callback(cookie: *mut AndroidProperty, name: *const c_char, value: *const c_char, _serial: u32) {
+    let cname = CStr::from_ptr(name);
+    let cvalue = CStr::from_ptr(value);
+    (*cookie).name = cname.to_str().unwrap().to_string();
+    (*cookie).value = cvalue.to_str().unwrap().to_string();
 }
 
 #[cfg(target_os = "android")]
-pub fn foreach_property_callback(pi: *const prop_info, cookie: *mut Vec<AndroidProperty>) {
+unsafe fn foreach_property_callback(pi: *const prop_info, cookie: *mut Vec<AndroidProperty>) {
     let mut result = Box::new(AndroidProperty {name: "".to_string(), value: "".to_string()});
-    unsafe { __system_property_read_callback(pi, property_callback, &mut *result) };
-    unsafe {
-        (*cookie).push(*result)
-    };
+    __system_property_read_callback(pi, property_callback, &mut *result);
+    (*cookie).push(*result);
 }
 
 #[cfg(target_os = "android")]
