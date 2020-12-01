@@ -106,6 +106,12 @@ pub fn setprop(_name: &str, _value: &str) -> Result<()> {
     Err(anyhow!("Failed to set android property (OS not supported)"))
 }
 
+#[cfg(not(target_os = "android"))]
+pub fn prop_values() -> impl Iterator<Item = AndroidProperty> {
+    let properties: Box<Vec<AndroidProperty>> = Box::new(Vec::new());
+    properties.into_iter()
+}
+
 #[cfg(target_os = "android")]
 pub fn prop_values() -> impl Iterator<Item = AndroidProperty> {
     let mut properties: Box<Vec<AndroidProperty>> = Box::new(Vec::new());
