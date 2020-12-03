@@ -12,6 +12,7 @@ use std::{
 ///
 /// This is defined inside bionic in bionic/libc/system_properties/include/system_properties/prop_info.h
 /// The struct is not complete, as its memeber are never used inside Rust
+#[derive(Debug)]
 #[repr(C)]
 pub struct prop_info {
     /// ID

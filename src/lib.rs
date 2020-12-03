@@ -2,8 +2,7 @@
 
 #![deny(
     missing_docs,
-    //missing_debug_implementations,
-    //missing_copy_implementations,
+    missing_debug_implementations,
     unused
 )]
 
@@ -20,6 +19,7 @@ pub mod mock;
 /// A struct representing android properties
 ///
 /// This struct consists from a name-value pair
+#[derive(Debug)]
 pub struct AndroidProperty {
     /// Property name
     pub name: String,
