@@ -1,10 +1,6 @@
 //! android-properties is a rust wrapper for bionic property-related syscalls
 
-#![deny(
-    missing_docs,
-    missing_debug_implementations,
-    unused
-)]
+#![deny(missing_docs, missing_debug_implementations, unused)]
 
 use anyhow::Result;
 

@@ -1,5 +1,5 @@
-use anyhow::{anyhow, Result};
 use crate::AndroidProperty;
+use anyhow::{anyhow, Result};
 
 /// Mock implementation for getprop
 ///

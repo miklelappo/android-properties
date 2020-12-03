@@ -1,5 +1,5 @@
-use anyhow::{anyhow, Result};
 use crate::AndroidProperty;
+use anyhow::{anyhow, Result};
 
 const PROPERTY_VALUE_MAX: usize = 92;
 
@@ -21,7 +21,6 @@ pub struct prop_info {
     pub value: [u8; PROPERTY_VALUE_MAX],
 }
 
-
 type Callback = unsafe fn(*mut AndroidProperty, *const c_char, *const c_char, u32);
 type ForEachCallback = unsafe fn(*const prop_info, *mut Vec<AndroidProperty>);
 
@@ -33,7 +32,10 @@ unsafe fn property_callback(cookie: *mut AndroidProperty, name: *const c_char, v
 }
 
 unsafe fn foreach_property_callback(pi: *const prop_info, cookie: *mut Vec<AndroidProperty>) {
-    let mut result = Box::new(AndroidProperty {name: "".to_string(), value: "".to_string()});
+    let mut result = Box::new(AndroidProperty {
+        name: "".to_string(),
+        value: "".to_string(),
+    });
     __system_property_read_callback(pi, property_callback, &mut *result);
     (*cookie).push(*result);
 }
@@ -71,7 +73,10 @@ pub fn plat_getprop(name: &str) -> Option<String> {
     if pi == std::ptr::null() {
         return None;
     }
-    let mut result = Box::new(AndroidProperty {name: "".to_string(), value: "".to_string()});
+    let mut result = Box::new(AndroidProperty {
+        name: "".to_string(),
+        value: "".to_string(),
+    });
     unsafe { __system_property_read_callback(pi, property_callback, &mut *result) };
     Some(result.value)
 }
