@@ -6,14 +6,18 @@ const PROPERTY_VALUE_MAX: usize = 92;
 use std::{
     ffi::{CStr, CString},
     os::raw::{c_char, c_int},
-    ptr,
 };
 
+/// A struct representing property_info
+///
+/// This is defined inside bionic in bionic/libc/system_properties/include/system_properties/prop_info.h
+/// The struct is not complete, as its memeber are never used inside Rust
 #[repr(C)]
 pub struct prop_info {
+    /// ID
     pub serial: u32,
+    /// Current value
     pub value: [u8; PROPERTY_VALUE_MAX],
-    pub name: [u8; PROPERTY_VALUE_MAX],
 }
 
 
@@ -46,7 +50,7 @@ extern "C" {
     fn __system_property_get(name: *const c_char, value: *mut c_char) -> c_int;
 }
 
-/// Set a property with `name` to value `value`
+/// Set system property `name` to `value`, creating the system property if it doesn't already exist
 pub fn plat_setprop(name: &str, value: &str) -> Result<()> {
     let cname = CString::new(name).unwrap();
     let cvalue = CString::new(value).unwrap();
@@ -58,11 +62,12 @@ pub fn plat_setprop(name: &str, value: &str) -> Result<()> {
     }
 }
 
+/// Retrieve a property with name `name`. Returns None if the operation fails.
 #[cfg(not(feature = "bionic-deprecated"))]
 pub fn plat_getprop(name: &str) -> Option<String> {
     let cname = CString::new(name).unwrap();
     let pi = unsafe { __system_property_find(cname.as_ptr()) };
-    if pi == ptr::null() {
+    if pi == std::ptr::null() {
         return None;
     }
     let mut result = Box::new(AndroidProperty {name: "".to_string(), value: "".to_string()});
@@ -83,6 +88,7 @@ pub fn plat_getprop(name: &str) -> Option<String> {
     }
 }
 
+/// Returns an iterator to vector, which contains all properties present in a system
 pub fn plat_prop_values() -> impl Iterator<Item = AndroidProperty> {
     let mut properties: Box<Vec<AndroidProperty>> = Box::new(Vec::new());
     unsafe {
