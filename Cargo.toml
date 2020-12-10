@@ -1,5 +1,6 @@
 [package]
 name = "android-properties"
+description = "Rust-based Android properties wrapper"
 version = "0.1.0"
 authors = ["Mikhail Lappo <mikhail.lappo@esrlabs.com>"]
 edition = "2018"
