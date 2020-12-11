@@ -1,10 +1,11 @@
 use crate::AndroidProperty;
+use std::os::raw::c_void;
 
 /// Mock implementation for getprop
 ///
 /// Always returns None
-pub fn plat_getprop(name: &str) -> AndroidProperty {
-    AndroidProperty::new(name.to_string(), None, None)
+pub fn plat_getprop(_: &str, _: *const c_void) -> Option<String> {
+    None
 }
 
 /// Mock implementation for setprop
@@ -20,4 +21,11 @@ pub fn plat_setprop(_name: &str, _value: &str) -> Result<(), String> {
 pub fn plat_prop_values() -> impl Iterator<Item = AndroidProperty> {
     let properties: Box<Vec<AndroidProperty>> = Box::new(Vec::new());
     properties.into_iter()
+}
+
+/// Mock implementation to find property_info pointer
+///
+/// Always returns nullptr
+pub fn plat_get_property_info(_name: &str) -> *const c_void {
+    std::ptr::null()
 }

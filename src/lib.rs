@@ -5,6 +5,11 @@
 use std::{fmt, os::raw::c_void};
 
 #[cfg(target_os = "android")]
+use crate::android::*;
+#[cfg(not(target_os = "android"))]
+use crate::mock::*;
+
+#[cfg(target_os = "android")]
 /// The implementation of property API for Android bionic-based systems
 pub mod android;
 
@@ -18,64 +23,63 @@ pub mod mock;
 #[derive(Debug)]
 pub struct AndroidProperty {
     /// Property name
-    pub name: String,
-    /// Property value
-    pub value: Option<String>,
+    name: String,
     /// Property info pointer
-    pub property_info: *const c_void,
+    property_info: *const c_void,
 }
 
 impl AndroidProperty {
     /// Initializes and returns struct representing android properties
-    pub fn new(name: String, value: Option<String>, property_info: Option<*const c_void>) -> Self {
+    pub fn new(name: &str) -> Self {
         AndroidProperty {
-            name: name,
-            value: value,
-            property_info: property_info.unwrap_or(std::ptr::null()),
+            name: name.to_string(),
+            property_info: std::ptr::null(),
         }
     }
 
-    /// Refresh property value using property_info strucutre for optimisation
-    /// if possible
-    pub fn refresh(&mut self) -> Result<(), String> {
-        #[cfg(not(target_os = "android"))]
-        return Err("Not supported by platform".into());
+    /// Return property name
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
 
-        #[cfg(feature = "bionic-deprecated")]
-        return Err("Not supported by deprecated bionic".into());
-
-        #[cfg(target_os = "android")]
-        #[cfg(not(feature = "bionic-deprecated"))]
-        {
-            crate::android::plat_refresh_prop(self);
-            Ok(())
+    /// Return property value
+    pub fn value(&mut self) -> Option<String> {
+        if self.property_info.is_null() {
+            self.property_info = plat_get_property_info(&self.name);
         }
+        plat_getprop(&self.name, self.property_info)
+    }
+
+    /// Set property value
+    pub fn set_value(&self, value: &str) -> Result<(), String> {
+        plat_setprop(&self.name, value)
     }
 }
 
 impl fmt::Display for AndroidProperty {
     // Output in format [<name>]: [<value>]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{}]: [{}]", self.name, self.value.as_ref().unwrap_or(&"".to_string()))
+        let mut property_info = self.property_info;
+        if property_info.is_null() {
+            property_info = plat_get_property_info(&self.name);
+        }
+        write!(
+            f,
+            "[{}]: [{}]",
+            self.name,
+            plat_getprop(&self.name, property_info).unwrap_or_else(|| "".into())
+        )
     }
 }
 
 /// Returns the property value if it exists
 pub fn getprop(name: &str) -> AndroidProperty {
-    #[cfg(target_os = "android")]
-    return crate::android::plat_getprop(name);
-
-    #[cfg(not(target_os = "android"))]
-    return crate::mock::plat_getprop(name);
+    AndroidProperty::new(name)
 }
 
 /// Sets the property value if it exists or creates new one with specified value
 pub fn setprop(name: &str, value: &str) -> Result<(), String> {
-    #[cfg(target_os = "android")]
-    return crate::android::plat_setprop(name, value);
-
-    #[cfg(not(target_os = "android"))]
-    return crate::mock::plat_setprop(name, value);
+    AndroidProperty::new(name).set_value(value)
 }
 
 /// Returns an iterator to vector, which contains all properties present in a system
