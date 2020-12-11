@@ -1,27 +1,12 @@
 use crate::AndroidProperty;
 
-const PROPERTY_VALUE_MAX: usize = 92;
-
 use std::{
     ffi::{CStr, CString},
-    os::raw::{c_char, c_int},
+    os::raw::{c_char, c_int, c_void},
 };
 
-/// A struct representing property_info
-///
-/// This is defined inside bionic in bionic/libc/system_properties/include/system_properties/prop_info.h
-/// The struct is not complete, as its memeber are never used inside Rust
-#[derive(Debug)]
-#[repr(C)]
-pub struct prop_info {
-    /// ID
-    pub serial: u32,
-    /// Current value
-    pub value: [u8; PROPERTY_VALUE_MAX],
-}
-
 type Callback = unsafe fn(*mut AndroidProperty, *const c_char, *const c_char, u32);
-type ForEachCallback = unsafe fn(*const prop_info, *mut Vec<AndroidProperty>);
+type ForEachCallback = unsafe fn(*const c_void, *mut Vec<AndroidProperty>);
 
 unsafe fn property_callback(cookie: *mut AndroidProperty, name: *const c_char, value: *const c_char, _serial: u32) {
     let cname = CStr::from_ptr(name);
@@ -30,10 +15,11 @@ unsafe fn property_callback(cookie: *mut AndroidProperty, name: *const c_char, v
     (*cookie).value = cvalue.to_str().unwrap().to_string();
 }
 
-unsafe fn foreach_property_callback(pi: *const prop_info, cookie: *mut Vec<AndroidProperty>) {
+unsafe fn foreach_property_callback(pi: *const c_void, cookie: *mut Vec<AndroidProperty>) {
     let mut result = Box::new(AndroidProperty {
         name: "".to_string(),
         value: "".to_string(),
+        property_info: pi,
     });
     __system_property_read_callback(pi, property_callback, &mut *result);
     (*cookie).push(*result);
@@ -41,8 +27,8 @@ unsafe fn foreach_property_callback(pi: *const prop_info, cookie: *mut Vec<Andro
 
 extern "C" {
     fn __system_property_set(name: *const c_char, value: *const c_char) -> c_int;
-    fn __system_property_find(name: *const c_char) -> *const prop_info;
-    fn __system_property_read_callback(pi: *const prop_info, callback: Callback, cookie: *mut AndroidProperty);
+    fn __system_property_find(name: *const c_char) -> *const c_void;
+    fn __system_property_read_callback(pi: *const c_void, callback: Callback, cookie: *mut AndroidProperty);
     fn __system_property_foreach(callback: ForEachCallback, cookie: *mut Vec<AndroidProperty>) -> c_int;
 }
 
@@ -75,6 +61,7 @@ pub fn plat_getprop(name: &str) -> Option<String> {
     let mut result = Box::new(AndroidProperty {
         name: "".to_string(),
         value: "".to_string(),
+        property_info: pi,
     });
     unsafe { __system_property_read_callback(pi, property_callback, &mut *result) };
     Some(result.value)

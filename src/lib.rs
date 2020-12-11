@@ -2,6 +2,8 @@
 
 #![deny(missing_docs, missing_debug_implementations, unused)]
 
+use std::os::raw::c_void;
+
 #[cfg(target_os = "android")]
 /// The implementation of property API for Android bionic-based systems
 pub mod android;
@@ -19,6 +21,8 @@ pub struct AndroidProperty {
     pub name: String,
     /// Property value
     pub value: String,
+    /// Property info pointer
+    pub property_info: *const c_void,
 }
 
 /// Returns the property value if it exists
