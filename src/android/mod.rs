@@ -7,6 +7,7 @@ use std::{
 
 type Callback = unsafe fn(*mut ValuePair, *const c_char, *const c_char, u32);
 type ForEachCallback = unsafe fn(*const c_void, *mut Vec<AndroidProperty>);
+
 struct ValuePair {
     name: String,
     value: String,
@@ -63,7 +64,7 @@ pub fn plat_getprop(_: &str, property_info: *const c_void) -> Option<String> {
         name: String::new(),
         value: String::new(),
     });
-    if property_info != std::ptr::null() {
+    if !property_info.is_null() {
         unsafe { __system_property_read_callback(property_info, property_callback, &mut *result) };
     }
     Some((*result).value)
