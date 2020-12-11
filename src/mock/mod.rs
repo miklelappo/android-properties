@@ -1,5 +1,4 @@
 use crate::AndroidProperty;
-use anyhow::{anyhow, Result};
 
 /// Mock implementation for getprop
 ///
@@ -11,8 +10,8 @@ pub fn plat_getprop(_name: &str) -> Option<String> {
 /// Mock implementation for setprop
 ///
 /// Always returns Err
-pub fn plat_setprop(_name: &str, _value: &str) -> Result<()> {
-    Err(anyhow!("Failed to set android property (OS not supported)"))
+pub fn plat_setprop(_name: &str, _value: &str) -> Result<(), String> {
+    Err("Failed to set android property (OS not supported)".to_string())
 }
 
 /// Mock implementation for prop_values

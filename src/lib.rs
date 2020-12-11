@@ -2,8 +2,6 @@
 
 #![deny(missing_docs, missing_debug_implementations, unused)]
 
-use anyhow::Result;
-
 #[cfg(target_os = "android")]
 /// The implementation of property API for Android bionic-based systems
 pub mod android;
@@ -33,7 +31,7 @@ pub fn getprop(name: &str) -> Option<String> {
 }
 
 /// Sets the property value if it exists or creates new one with specified value
-pub fn setprop(name: &str, value: &str) -> Result<()> {
+pub fn setprop(name: &str, value: &str) -> Result<(), String> {
     #[cfg(target_os = "android")]
     return crate::android::plat_setprop(name, value);
 

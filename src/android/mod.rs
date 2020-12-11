@@ -1,5 +1,4 @@
 use crate::AndroidProperty;
-use anyhow::{anyhow, Result};
 
 const PROPERTY_VALUE_MAX: usize = 92;
 
@@ -54,14 +53,14 @@ extern "C" {
 }
 
 /// Set system property `name` to `value`, creating the system property if it doesn't already exist
-pub fn plat_setprop(name: &str, value: &str) -> Result<()> {
+pub fn plat_setprop(name: &str, value: &str) -> Result<(), String> {
     let cname = CString::new(name).unwrap();
     let cvalue = CString::new(value).unwrap();
     let ret = unsafe { __system_property_set(cname.as_ptr(), cvalue.as_ptr()) };
     if ret >= 0 {
         Ok(())
     } else {
-        Err(anyhow!("Failed to set Android property \"{}\" to \"{}\"", name, value))
+        Err(format!("Failed to set Android property \"{}\" to \"{}\"", name, value))
     }
 }
 
