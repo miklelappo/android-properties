@@ -3,8 +3,8 @@ use crate::AndroidProperty;
 /// Mock implementation for getprop
 ///
 /// Always returns None
-pub fn plat_getprop(_name: &str) -> Option<String> {
-    None
+pub fn plat_getprop(name: &str) -> AndroidProperty {
+    AndroidProperty::new(name.to_string(), None, None)
 }
 
 /// Mock implementation for setprop
