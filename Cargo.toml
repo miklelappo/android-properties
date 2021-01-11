@@ -24,4 +24,4 @@ exclude = [".travis.yml", "check.sh"]
 bionic-deprecated = []
 
 [package.metadata.docs.rs]
-targets = ["arm-linux-androideabi", "armv7-linux-androideabi", "aarch64-linux-android", "i686-linux-android"]
+targets = ["arm-linux-androideabi", "armv7-linux-androideabi", "aarch64-linux-android", "i686-linux-android", "x86_64-unknown-linux-gnu"]
