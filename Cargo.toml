@@ -1,12 +1,14 @@
 [package]
 name = "android-properties"
 description = "Rust-based Android properties wrapper"
-version = "0.2.0-alpha.0"
+version = "0.2.0"
 authors = ["Mikhail Lappo <mikhail.lappo@esrlabs.com>"]
 edition = "2018"
 license = "MIT"
 repository = "https://github.com/miklelappo/android-properties"
 homepage = "https://github.com/miklelappo/android-properties"
+documentation = "https://docs.rs/android-properties/0.2.0"
+readme = "README.md"
 keywords = [
     "android",
     "properties",
@@ -14,6 +16,7 @@ keywords = [
     "bionic",
     "persistent"
 ]
+categories = ["external-ffi-bindings", "os", "os::linux-apis"]
 exclude = [".travis.yml"]
 
 [features]
