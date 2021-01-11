@@ -17,7 +17,7 @@ keywords = [
     "persistent"
 ]
 categories = ["external-ffi-bindings", "os", "os::linux-apis"]
-exclude = [".travis.yml"]
+exclude = [".travis.yml", "check.sh"]
 
 [features]
 # Use this feature if you have Android 8 and older versions
