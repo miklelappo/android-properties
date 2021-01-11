@@ -19,3 +19,5 @@ keywords = [
 # Use this feature if you have Android 8 and older versions
 bionic-deprecated = []
 
+[package.metadata.docs.rs]
+targets = ["arm-linux-androideabi", "armv7-linux-androideabi", "aarch64-linux-android", "i686-linux-android"]
