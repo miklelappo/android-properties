@@ -1,5 +1,8 @@
+use android_properties::AndroidProperties;
+
 fn main() {
-    for property in android_properties::prop_values() {
-        println!("{}", property);
+    let properties = AndroidProperties::new();
+    for property in properties.property_values() {
+        println!("{:?}", properties.get(&property));
     }
 }

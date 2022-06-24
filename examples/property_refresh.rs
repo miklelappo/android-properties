@@ -1,12 +1,15 @@
-use android_properties::{setprop, AndroidProperty};
+use android_properties::{AndroidProperties, AndroidProperty};
 
 const HELLO_WORLD_PROPERTY: &str = "hello.world";
 
 fn main() {
-    setprop(HELLO_WORLD_PROPERTY, "initial value").expect("Cannot set android property");
-    let hello_world = AndroidProperty::new(HELLO_WORLD_PROPERTY);
-    println!("Initial property: {}", hello_world);
+    let properties = AndroidProperties::new();
 
-    setprop(HELLO_WORLD_PROPERTY, "refreshed value").expect("Cannot set android property");
-    println!("Refreshed property: {}", hello_world);
+    properties.set_property(HELLO_WORLD_PROPERTY, "initial value").expect("Cannot set android property");
+
+    let hello_world = AndroidProperty::new(HELLO_WORLD_PROPERTY);
+    println!("Initial property: {:?}", properties.get(&hello_world));
+
+    properties.set_property(HELLO_WORLD_PROPERTY, "refreshed value").expect("Cannot set android property");
+    println!("Refreshed property: {:?}", properties.get(&hello_world));
 }
