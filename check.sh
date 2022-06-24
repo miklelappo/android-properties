@@ -1,4 +1,5 @@
 set -e
+
 adb shell reboot
 
 cargo check --target=aarch64-linux-android
