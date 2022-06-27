@@ -1,3 +1,6 @@
+use android_properties::AndroidProperties;
+
 fn main() {
-    android_properties::setprop("hello.world", "hello").expect("Cannot set android property");
+    let properties = AndroidProperties::new();
+    properties.set_property("hello.world", "hello").expect("Cannot set android property");
 }

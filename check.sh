@@ -1,10 +1,8 @@
 set -e
+
 adb shell reboot
 
 cargo check --target=aarch64-linux-android
-cargo check --target=aarch64-linux-android
-cargo check --target=aarch64-linux-android --features "bionic-deprecated"
-cargo check --target=aarch64-linux-android --examples --features "bionic-deprecated"
 cargo build --target=aarch64-linux-android --examples
 cargo doc
 cargo test
