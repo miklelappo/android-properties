@@ -67,7 +67,11 @@ pub fn plat_getprop(_: &str, property_info: *const c_void) -> Option<String> {
     if !property_info.is_null() {
         unsafe { __system_property_read_callback(property_info, property_callback, &mut *result) };
     }
-    Some((*result).value)
+
+    match (*result).value {
+        value if !value.is_empty() => Some(value),
+        _ => None
+    }
 }
 
 /// Retrieve a property with name `name`. Returns None if the operation fails.
